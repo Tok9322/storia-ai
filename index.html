@@ -1,0 +1,698 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Storia AI — 写真を送るだけ。あとは全部やります。</title>
+  <meta name="description" content="飲食店・小規模店舗向けのAIデジタル集客サポート。動画制作、SNS運用、LINE公式、Googleビジネスプロフィールまで、まるごとおまかせ。">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@400;600;700;800&family=Noto+Sans+JP:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            terracotta: { 50: '#FEF3ED', 100: '#FDDCCA', 200: '#F9B48E', 300: '#E8895A', 400: '#C75B2A', 500: '#A64A1F', 600: '#7D3816', 700: '#5A280F', 800: '#3D1A09', 900: '#2C1810' },
+            amber: { 50: '#FFF9EB', 100: '#FEF0CC', 200: '#FDE09A', 300: '#F5C85A', 400: '#E8A849', 500: '#D49235', 600: '#B07425', 700: '#8A5A1C', 800: '#6B4415', 900: '#4D310F' },
+            cream: { 50: '#FFFDF8', 100: '#FDF6EC', 200: '#FAEDD8', 300: '#F5DFC0', 400: '#EDD0A7', 500: '#D4B88E' },
+            espresso: { 50: '#F5EDE8', 100: '#E0CFC4', 200: '#C4A893', 300: '#A68066', 400: '#7A5540', 500: '#5A3D2E', 600: '#3D2A1F', 700: '#2C1810', 800: '#1E100A', 900: '#120A06' },
+            olive: { 50: '#F4F5EC', 100: '#E3E7CF', 200: '#C4CDA0', 300: '#9BAD6E', 400: '#6B7B3A', 500: '#556230', 600: '#414B25', 700: '#2F361B', 800: '#1F2412', 900: '#14180C' }
+          },
+          fontFamily: {
+            display: ['"Shippori Mincho"', 'serif'],
+            body: ['"Noto Sans JP"', 'sans-serif']
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body { font-family: 'Noto Sans JP', sans-serif; color: #2C1810; background: #FDF6EC; }
+
+    /* Grain texture overlay */
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 9999;
+    }
+
+    /* Scroll reveal animations */
+    .reveal {
+      opacity: 0;
+      transform: translateY(40px);
+      transition: opacity 0.8s cubic-bezier(0.22, 1, 0.36, 1), transform 0.8s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    .reveal.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    .reveal-delay-1 { transition-delay: 0.1s; }
+    .reveal-delay-2 { transition-delay: 0.2s; }
+    .reveal-delay-3 { transition-delay: 0.3s; }
+    .reveal-delay-4 { transition-delay: 0.4s; }
+
+    /* Hero animations */
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(30px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    @keyframes scaleIn {
+      from { opacity: 0; transform: scale(0.95); }
+      to { opacity: 1; transform: scale(1); }
+    }
+    .hero-title { animation: fadeInUp 1s cubic-bezier(0.22, 1, 0.36, 1) 0.2s both; }
+    .hero-sub { animation: fadeInUp 1s cubic-bezier(0.22, 1, 0.36, 1) 0.5s both; }
+    .hero-video { animation: scaleIn 1s cubic-bezier(0.22, 1, 0.36, 1) 0.7s both; }
+    .hero-cta { animation: fadeInUp 1s cubic-bezier(0.22, 1, 0.36, 1) 0.9s both; }
+
+    /* Decorative line */
+    .deco-line {
+      width: 60px;
+      height: 3px;
+      background: linear-gradient(90deg, #C75B2A, #E8A849);
+      border-radius: 2px;
+    }
+
+    /* CTA button glow */
+    .cta-btn {
+      background: linear-gradient(135deg, #4CAF50, #2E7D32);
+      box-shadow: 0 4px 20px rgba(76, 175, 80, 0.35);
+      transition: all 0.3s ease;
+    }
+    .cta-btn:hover {
+      box-shadow: 0 6px 30px rgba(76, 175, 80, 0.5);
+      transform: translateY(-2px);
+    }
+
+    /* FAQ accordion */
+    .faq-answer {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.4s cubic-bezier(0.22, 1, 0.36, 1), padding 0.4s ease;
+    }
+    .faq-item.open .faq-answer {
+      max-height: 200px;
+      padding-top: 16px;
+    }
+    .faq-item.open .faq-icon {
+      transform: rotate(45deg);
+    }
+    .faq-icon {
+      transition: transform 0.3s ease;
+    }
+
+    /* Plan card hover */
+    .plan-card {
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    .plan-card:hover {
+      transform: translateY(-6px);
+      box-shadow: 0 20px 40px rgba(44, 24, 16, 0.1);
+    }
+
+    /* Step connector line */
+    .step-connector {
+      position: absolute;
+      top: 28px;
+      left: 28px;
+      width: calc(100% - 56px);
+      height: 3px;
+      background: linear-gradient(90deg, #C75B2A, #E8A849, #6B7B3A);
+      z-index: 0;
+    }
+
+    /* Warm gradient sections */
+    .warm-gradient {
+      background: linear-gradient(180deg, #FDF6EC 0%, #FAEDD8 50%, #FDF6EC 100%);
+    }
+
+    /* Section divider */
+    .section-wave {
+      position: absolute;
+      bottom: -1px;
+      left: 0;
+      width: 100%;
+      overflow: hidden;
+      line-height: 0;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ========== HEADER ========== -->
+  <header class="fixed top-0 left-0 right-0 z-50 transition-all duration-300" id="header">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between">
+      <a href="#" class="font-display text-2xl sm:text-3xl font-bold text-espresso-700 tracking-tight">
+        Storia <span class="text-terracotta-400">AI</span>
+      </a>
+      <a href="#contact" class="cta-btn text-white font-bold py-2.5 px-5 sm:px-6 rounded-full text-sm sm:text-base inline-flex items-center gap-2">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M19.365 9.863c.349 0 .63.285.63.631 0 .345-.281.63-.63.63H17.61v1.125h1.755c.349 0 .63.283.63.63 0 .344-.281.629-.63.629h-2.386c-.349 0-.63-.285-.63-.629V9.243c0-.346.281-.63.63-.63h2.386c.349 0 .63.285.63.63 0 .346-.281.631-.63.631H17.61v.989h1.755zM9.98 12.408c-.006.129-.09.264-.227.334l-.04.018a.4.4 0 01-.175.041.393.393 0 01-.301-.15L7.77 10.785l-.006 1.774c0 .351-.281.634-.631.634-.349 0-.63-.283-.63-.634V9.243c0-.129.09-.264.226-.334a.397.397 0 01.517.109l1.465 1.866.006-1.774c0-.346.281-.63.63-.63.346 0 .63.284.63.63v3.165h-.001zM6.161 12.559c-.349 0-.63-.285-.63-.631V9.243c0-.346.281-.63.63-.63.349 0 .63.284.63.63v2.685c0 .346-.281.631-.63.631zM3.829 12.559c-.349 0-.63-.285-.63-.631v-2.054H2.614c-.349 0-.63-.285-.63-.631 0-.345.281-.63.63-.63h2.43c.349 0 .63.285.63.631 0 .345-.281.63-.63.63h-.585v2.054c0 .346-.281.631-.63.631z"/><path d="M12 2C6.478 2 2 6.478 2 12c0 1.89.525 3.66 1.438 5.168L2.546 20.2A1.884 1.884 0 003.8 21.454l3.032-.892A9.93 9.93 0 0012 22c5.523 0 10-4.477 10-10S17.523 2 12 2z"/></svg>
+        LINEで相談
+      </a>
+    </div>
+  </header>
+
+  <!-- ========== SECTION 1: HERO ========== -->
+  <section class="relative min-h-screen flex items-center pt-20 overflow-hidden">
+    <!-- Background decoration -->
+    <div class="absolute top-0 right-0 w-1/2 h-full opacity-[0.04]" style="background-image: radial-gradient(circle at 70% 30%, #C75B2A 0%, transparent 50%);"></div>
+    <div class="absolute bottom-0 left-0 w-96 h-96 opacity-[0.06]" style="background-image: radial-gradient(circle, #E8A849 0%, transparent 60%);"></div>
+
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 w-full">
+      <div class="grid lg:grid-cols-2 gap-10 lg:gap-16 items-center">
+        <!-- Left: Copy -->
+        <div class="text-center lg:text-left">
+          <p class="hero-sub font-body text-terracotta-400 font-semibold text-base sm:text-lg tracking-wider mb-4 sm:mb-6">
+            飲食店・小規模店舗のオーナー様へ
+          </p>
+          <h1 class="hero-title font-display text-4xl sm:text-5xl lg:text-6xl font-extrabold leading-tight text-espresso-700 mb-6 sm:mb-8">
+            写真を送るだけ。<br>
+            <span class="bg-gradient-to-r from-terracotta-400 to-amber-400 bg-clip-text text-transparent">あとは全部</span><br>
+            やります。
+          </h1>
+          <p class="hero-sub font-body text-lg sm:text-xl text-espresso-400 leading-relaxed mb-8 sm:mb-10 max-w-lg mx-auto lg:mx-0">
+            AI動画・SNS運用・LINE公式・Googleマップ対策まで。<br class="hidden sm:block">
+            お店の集客を、まるごとおまかせください。
+          </p>
+          <div class="hero-cta flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
+            <a href="#contact" class="cta-btn text-white font-bold py-4 px-8 rounded-full text-lg inline-flex items-center justify-center gap-3">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M19.365 9.863c.349 0 .63.285.63.631 0 .345-.281.63-.63.63H17.61v1.125h1.755c.349 0 .63.283.63.63 0 .344-.281.629-.63.629h-2.386c-.349 0-.63-.285-.63-.629V9.243c0-.346.281-.63.63-.63h2.386c.349 0 .63.285.63.63 0 .346-.281.631-.63.631H17.61v.989h1.755zM9.98 12.408c-.006.129-.09.264-.227.334l-.04.018a.4.4 0 01-.175.041.393.393 0 01-.301-.15L7.77 10.785l-.006 1.774c0 .351-.281.634-.631.634-.349 0-.63-.283-.63-.634V9.243c0-.129.09-.264.226-.334a.397.397 0 01.517.109l1.465 1.866.006-1.774c0-.346.281-.63.63-.63.346 0 .63.284.63.63v3.165h-.001zM6.161 12.559c-.349 0-.63-.285-.63-.631V9.243c0-.346.281-.63.63-.63.349 0 .63.284.63.63v2.685c0 .346-.281.631-.63.631zM3.829 12.559c-.349 0-.63-.285-.63-.631v-2.054H2.614c-.349 0-.63-.285-.63-.631 0-.345.281-.63.63-.63h2.43c.349 0 .63.285.63.631 0 .345-.281.63-.63.63h-.585v2.054c0 .346-.281.631-.63.631z"/><path d="M12 2C6.478 2 2 6.478 2 12c0 1.89.525 3.66 1.438 5.168L2.546 20.2A1.884 1.884 0 003.8 21.454l3.032-.892A9.93 9.93 0 0012 22c5.523 0 10-4.477 10-10S17.523 2 12 2z"/></svg>
+              無料でLINE相談する
+            </a>
+            <a href="#services" class="font-bold py-4 px-8 rounded-full text-lg text-espresso-500 border-2 border-espresso-200 hover:border-terracotta-300 hover:text-terracotta-500 transition-all inline-flex items-center justify-center gap-2">
+              サービスを見る
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3v10M3 8l5 5 5-5"/></svg>
+            </a>
+          </div>
+        </div>
+
+        <!-- Right: Video placeholder -->
+        <div class="hero-video relative">
+          <div class="relative rounded-2xl overflow-hidden shadow-2xl shadow-espresso-900/10 aspect-[4/3] bg-gradient-to-br from-espresso-700 to-espresso-900 flex items-center justify-center">
+            <!-- Decorative food pattern bg -->
+            <div class="absolute inset-0 opacity-10" style="background-image: url('data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2260%22 height=%2260%22 viewBox=%220 0 60 60%22><circle cx=%2230%22 cy=%2230%22 r=%228%22 fill=%22%23E8A849%22 fill-opacity=%220.3%22/></svg>');"></div>
+            <div class="text-center z-10 p-8">
+              <div class="w-20 h-20 rounded-full bg-white/20 backdrop-blur flex items-center justify-center mx-auto mb-4 cursor-pointer hover:bg-white/30 transition-all hover:scale-110">
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="white"><path d="M8 5v14l11-7z"/></svg>
+              </div>
+              <p class="text-white/80 font-body text-base">サンプル動画を再生</p>
+              <p class="text-white/50 font-body text-sm mt-1">AIが作った料理プロモーション動画</p>
+            </div>
+            <!-- Corner accent -->
+            <div class="absolute top-4 left-4 w-12 h-12 border-t-2 border-l-2 border-amber-400/40 rounded-tl-lg"></div>
+            <div class="absolute bottom-4 right-4 w-12 h-12 border-b-2 border-r-2 border-amber-400/40 rounded-br-lg"></div>
+          </div>
+          <!-- Floating badge -->
+          <div class="absolute -bottom-4 -left-4 bg-white rounded-xl shadow-lg px-5 py-3 flex items-center gap-3">
+            <div class="w-10 h-10 bg-terracotta-50 rounded-full flex items-center justify-center">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#C75B2A" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+            </div>
+            <div>
+              <p class="font-bold text-espresso-700 text-sm">制作時間</p>
+              <p class="text-terracotta-400 font-bold">最短15分</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== SECTION 2: PAIN POINTS ========== -->
+  <section class="py-20 sm:py-28 relative warm-gradient">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6">
+      <div class="text-center mb-14 sm:mb-20">
+        <p class="reveal font-body text-terracotta-400 font-semibold text-sm tracking-widest uppercase mb-4">Problems</p>
+        <h2 class="reveal reveal-delay-1 font-display text-3xl sm:text-4xl lg:text-5xl font-bold text-espresso-700 mb-6">
+          こんなお悩み、<br class="sm:hidden">ありませんか？
+        </h2>
+        <div class="reveal reveal-delay-2 deco-line mx-auto"></div>
+      </div>
+
+      <div class="grid sm:grid-cols-2 gap-6 sm:gap-8 max-w-4xl mx-auto">
+        <!-- Pain 1 -->
+        <div class="reveal reveal-delay-1 bg-white/70 backdrop-blur rounded-2xl p-7 sm:p-8 border border-cream-300 hover:border-terracotta-200 transition-colors">
+          <div class="w-14 h-14 bg-terracotta-50 rounded-xl flex items-center justify-center mb-5">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#C75B2A" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+          </div>
+          <h3 class="font-display text-xl sm:text-2xl font-bold text-espresso-700 mb-3">集客をやりたいけど<br>時間がない</h3>
+          <p class="font-body text-espresso-400 text-base leading-relaxed">毎日の営業で精一杯。動画作成やGoogleの更新まで手が回らない…</p>
+        </div>
+        <!-- Pain 2 -->
+        <div class="reveal reveal-delay-2 bg-white/70 backdrop-blur rounded-2xl p-7 sm:p-8 border border-cream-300 hover:border-terracotta-200 transition-colors">
+          <div class="w-14 h-14 bg-amber-50 rounded-xl flex items-center justify-center mb-5">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#E8A849" stroke-width="1.5"><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/><circle cx="12" cy="12" r="5"/></svg>
+          </div>
+          <h3 class="font-display text-xl sm:text-2xl font-bold text-espresso-700 mb-3">動画を作りたいけど<br>費用が高すぎる</h3>
+          <p class="font-body text-espresso-400 text-base leading-relaxed">プロに頼むと1本5万円以上。何本も作るなんて、とても無理…</p>
+        </div>
+        <!-- Pain 3 -->
+        <div class="reveal reveal-delay-3 bg-white/70 backdrop-blur rounded-2xl p-7 sm:p-8 border border-cream-300 hover:border-terracotta-200 transition-colors">
+          <div class="w-14 h-14 bg-olive-50 rounded-xl flex items-center justify-center mb-5">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#6B7B3A" stroke-width="1.5"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+          </div>
+          <h3 class="font-display text-xl sm:text-2xl font-bold text-espresso-700 mb-3">LINE公式を<br>開設したけど放置</h3>
+          <p class="font-body text-espresso-400 text-base leading-relaxed">作ったはいいけど、何を配信すればいいかわからない。使い方も難しい…</p>
+        </div>
+        <!-- Pain 4 -->
+        <div class="reveal reveal-delay-4 bg-white/70 backdrop-blur rounded-2xl p-7 sm:p-8 border border-cream-300 hover:border-terracotta-200 transition-colors">
+          <div class="w-14 h-14 bg-terracotta-50 rounded-xl flex items-center justify-center mb-5">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#C75B2A" stroke-width="1.5"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+          </div>
+          <h3 class="font-display text-xl sm:text-2xl font-bold text-espresso-700 mb-3">Googleマップの<br>情報が古いまま</h3>
+          <p class="font-body text-espresso-400 text-base leading-relaxed">営業時間もメニューも更新できていない。口コミへの返信もできていない…</p>
+        </div>
+      </div>
+
+      <!-- Resolution message -->
+      <div class="reveal text-center mt-14 sm:mt-20">
+        <div class="inline-block bg-white rounded-2xl shadow-lg shadow-espresso-900/5 px-8 sm:px-12 py-6 sm:py-8 border border-cream-300">
+          <p class="font-display text-2xl sm:text-3xl font-bold text-espresso-700">
+            その悩み、<span class="text-terracotta-400">Storia AI</span>が<br class="sm:hidden">すべて解決します
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== SECTION 3: SERVICES ========== -->
+  <section id="services" class="py-20 sm:py-28 relative">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6">
+      <div class="text-center mb-14 sm:mb-20">
+        <p class="reveal font-body text-terracotta-400 font-semibold text-sm tracking-widest uppercase mb-4">Services</p>
+        <h2 class="reveal reveal-delay-1 font-display text-3xl sm:text-4xl lg:text-5xl font-bold text-espresso-700 mb-6">
+          サービス・料金
+        </h2>
+        <div class="reveal reveal-delay-2 deco-line mx-auto mb-6"></div>
+        <p class="reveal reveal-delay-2 font-body text-lg text-espresso-400">必要なものだけ、必要なときに。</p>
+      </div>
+
+      <!-- Spot Plans -->
+      <div class="mb-16">
+        <h3 class="reveal font-display text-2xl font-bold text-espresso-600 text-center mb-8 flex items-center justify-center gap-3">
+          <span class="w-8 h-8 bg-terracotta-400 text-white rounded-lg flex items-center justify-center text-sm font-bold">1</span>
+          スポット（単発）メニュー
+        </h3>
+        <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          <!-- Spot 1: AI動画PV -->
+          <div class="reveal reveal-delay-1 plan-card bg-white rounded-2xl p-7 border-2 border-terracotta-200 text-center relative overflow-hidden">
+            <div class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-terracotta-400 to-amber-400"></div>
+            <div class="w-16 h-16 bg-gradient-to-br from-terracotta-400 to-amber-400 rounded-2xl flex items-center justify-center mx-auto mb-5">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="white"><path d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M3 6h12v12H3z"/></svg>
+            </div>
+            <h4 class="font-display text-xl font-bold text-espresso-700 mb-2">AI動画PV</h4>
+            <p class="font-body text-espresso-400 text-sm mb-4">料理動画×3本<br>+オリジナルBGM付き</p>
+            <p class="font-display text-3xl font-bold text-terracotta-400 mb-1">3<span class="text-lg">〜</span>5<span class="text-lg font-semibold">万円</span></p>
+            <p class="font-body text-espresso-300 text-xs">3本セット</p>
+          </div>
+          <!-- Spot 2: 店舗LP制作 -->
+          <div class="reveal reveal-delay-2 plan-card bg-white rounded-2xl p-7 border border-cream-300 text-center">
+            <div class="w-16 h-16 bg-gradient-to-br from-amber-400 to-amber-300 rounded-2xl flex items-center justify-center mx-auto mb-5">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="white"><path d="M3 5a2 2 0 012-2h14a2 2 0 012 2v14a2 2 0 01-2 2H5a2 2 0 01-2-2V5zm4 2v2h10V7H7zm0 4v2h10v-2H7zm0 4v2h6v-2H7z"/></svg>
+            </div>
+            <h4 class="font-display text-xl font-bold text-espresso-700 mb-2">店舗LP制作</h4>
+            <p class="font-body text-espresso-400 text-sm mb-4">AIで1ページ完結型<br>お店のホームページ制作</p>
+            <p class="font-display text-3xl font-bold text-terracotta-400 mb-1">5<span class="text-lg">〜</span>8<span class="text-lg font-semibold">万円</span></p>
+            <p class="font-body text-espresso-300 text-xs">デザイン+公開込み</p>
+          </div>
+          <!-- Spot 3: メニュー表デザイン -->
+          <div class="reveal reveal-delay-3 plan-card bg-white rounded-2xl p-7 border border-cream-300 text-center">
+            <div class="w-16 h-16 bg-gradient-to-br from-olive-400 to-olive-300 rounded-2xl flex items-center justify-center mx-auto mb-5">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="white"><path d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z"/></svg>
+            </div>
+            <h4 class="font-display text-xl font-bold text-espresso-700 mb-2">メニュー表<br>デザイン</h4>
+            <p class="font-body text-espresso-400 text-sm mb-4">AI画像で<br>プロ品質に仕上げます</p>
+            <p class="font-display text-3xl font-bold text-terracotta-400 mb-1">2<span class="text-lg">〜</span>3<span class="text-lg font-semibold">万円</span></p>
+            <p class="font-body text-espresso-300 text-xs">デザイン1点</p>
+          </div>
+          <!-- Spot 4: Googleビジネスプロフィール開設 -->
+          <div class="reveal reveal-delay-4 plan-card bg-white rounded-2xl p-7 border border-cream-300 text-center">
+            <div class="w-16 h-16 bg-gradient-to-br from-espresso-500 to-espresso-700 rounded-2xl flex items-center justify-center mx-auto mb-5">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="white"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3" fill="none" stroke="white" stroke-width="2"/></svg>
+            </div>
+            <h4 class="font-display text-xl font-bold text-espresso-700 mb-2">Googleビジネス<br>プロフィール開設</h4>
+            <p class="font-body text-espresso-400 text-sm mb-4">初期設定+投稿5件<br>口コミ返信テンプレ込み</p>
+            <p class="font-display text-3xl font-bold text-terracotta-400 mb-1">1<span class="text-lg">〜</span>2<span class="text-lg font-semibold">万円</span></p>
+            <p class="font-body text-espresso-300 text-xs">開設代行</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Monthly Plans -->
+      <div>
+        <h3 class="reveal font-display text-2xl font-bold text-espresso-600 text-center mb-8 flex items-center justify-center gap-3">
+          <span class="w-8 h-8 bg-amber-400 text-white rounded-lg flex items-center justify-center text-sm font-bold">2</span>
+          月額サポートプラン
+        </h3>
+        <div class="grid sm:grid-cols-3 gap-6">
+          <!-- Monthly 1 -->
+          <div class="reveal reveal-delay-1 plan-card bg-white rounded-2xl p-7 border border-cream-300">
+            <div class="text-center mb-6">
+              <span class="inline-block bg-cream-200 text-espresso-500 font-bold text-xs px-3 py-1 rounded-full mb-3">ライト</span>
+              <h4 class="font-display text-xl font-bold text-espresso-700">AI動画 定額</h4>
+            </div>
+            <p class="font-display text-center text-3xl font-bold text-terracotta-400 mb-6">1<span class="text-lg">〜</span>2<span class="text-lg font-semibold">万円</span><span class="text-sm text-espresso-400 font-normal">/月</span></p>
+            <ul class="space-y-3 font-body text-espresso-500 text-sm">
+              <li class="flex items-start gap-3"><svg class="w-5 h-5 text-olive-400 flex-shrink-0 mt-0.5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>AI動画 月4本</li>
+              <li class="flex items-start gap-3"><svg class="w-5 h-5 text-olive-400 flex-shrink-0 mt-0.5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>オリジナルBGM付き</li>
+              <li class="flex items-start gap-3"><svg class="w-5 h-5 text-olive-400 flex-shrink-0 mt-0.5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>SNS投稿用サイズ対応</li>
+            </ul>
+          </div>
+          <!-- Monthly 2: Featured -->
+          <div class="reveal reveal-delay-2 plan-card bg-gradient-to-b from-espresso-800 to-espresso-900 rounded-2xl p-7 text-white relative overflow-hidden">
+            <div class="absolute top-0 right-0 bg-terracotta-400 text-white text-xs font-bold px-4 py-1.5 rounded-bl-xl">人気No.1</div>
+            <div class="text-center mb-6">
+              <span class="inline-block bg-white/15 text-white font-bold text-xs px-3 py-1 rounded-full mb-3">スタンダード</span>
+              <h4 class="font-display text-xl font-bold">LINE公式運用</h4>
+            </div>
+            <p class="font-display text-center text-3xl font-bold text-amber-300 mb-6">3<span class="text-lg">〜</span>5<span class="text-lg font-semibold">万円</span><span class="text-sm text-white/60 font-normal">/月</span></p>
+            <ul class="space-y-3 font-body text-white/80 text-sm">
+              <li class="flex items-start gap-3"><svg class="w-5 h-5 text-amber-300 flex-shrink-0 mt-0.5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>LINE配信 月4回</li>
+              <li class="flex items-start gap-3"><svg class="w-5 h-5 text-amber-300 flex-shrink-0 mt-0.5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>リッチメニュー作成・管理</li>
+              <li class="flex items-start gap-3"><svg class="w-5 h-5 text-amber-300 flex-shrink-0 mt-0.5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>クーポン・ショップカード設計</li>
+              <li class="flex items-start gap-3"><svg class="w-5 h-5 text-amber-300 flex-shrink-0 mt-0.5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>月次レポート</li>
+            </ul>
+          </div>
+          <!-- Monthly 3 -->
+          <div class="reveal reveal-delay-3 plan-card bg-white rounded-2xl p-7 border-2 border-amber-200">
+            <div class="text-center mb-6">
+              <span class="inline-block bg-gradient-to-r from-terracotta-400 to-amber-400 text-white font-bold text-xs px-3 py-1 rounded-full mb-3">おすすめ</span>
+              <h4 class="font-display text-xl font-bold text-espresso-700">まるごとパック</h4>
+            </div>
+            <p class="font-display text-center text-3xl font-bold text-terracotta-400 mb-6">5<span class="text-lg">〜</span>8<span class="text-lg font-semibold">万円</span><span class="text-sm text-espresso-400 font-normal">/月</span></p>
+            <ul class="space-y-3 font-body text-espresso-500 text-sm">
+              <li class="flex items-start gap-3"><svg class="w-5 h-5 text-olive-400 flex-shrink-0 mt-0.5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>AI動画 月4本+BGM</li>
+              <li class="flex items-start gap-3"><svg class="w-5 h-5 text-olive-400 flex-shrink-0 mt-0.5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>LINE公式運用</li>
+              <li class="flex items-start gap-3"><svg class="w-5 h-5 text-olive-400 flex-shrink-0 mt-0.5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>Googleビジネス管理</li>
+              <li class="flex items-start gap-3"><svg class="w-5 h-5 text-olive-400 flex-shrink-0 mt-0.5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>販促デザイン 月2点</li>
+              <li class="flex items-start gap-3"><svg class="w-5 h-5 text-olive-400 flex-shrink-0 mt-0.5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>月次レポート</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== SECTION 4: CASE STUDIES ========== -->
+  <section class="py-20 sm:py-28 warm-gradient">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6">
+      <div class="text-center mb-14 sm:mb-20">
+        <p class="reveal font-body text-terracotta-400 font-semibold text-sm tracking-widest uppercase mb-4">Case Studies</p>
+        <h2 class="reveal reveal-delay-1 font-display text-3xl sm:text-4xl lg:text-5xl font-bold text-espresso-700 mb-6">
+          制作事例
+        </h2>
+        <div class="reveal reveal-delay-2 deco-line mx-auto"></div>
+      </div>
+
+      <div class="grid md:grid-cols-2 gap-8 sm:gap-10 max-w-5xl mx-auto">
+        <!-- Case 1 -->
+        <div class="reveal reveal-delay-1 bg-white rounded-2xl overflow-hidden shadow-lg shadow-espresso-900/5 border border-cream-300">
+          <div class="grid grid-cols-2">
+            <div class="aspect-square bg-cream-200 flex items-center justify-center p-6 relative">
+              <span class="absolute top-3 left-3 bg-espresso-700 text-white text-xs font-bold px-2.5 py-1 rounded-md">Before</span>
+              <div class="text-center">
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#C4A893" stroke-width="1"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+                <p class="text-espresso-300 text-xs mt-2">スマホ写真</p>
+              </div>
+            </div>
+            <div class="aspect-square bg-gradient-to-br from-espresso-700 to-espresso-900 flex items-center justify-center p-6 relative">
+              <span class="absolute top-3 left-3 bg-terracotta-400 text-white text-xs font-bold px-2.5 py-1 rounded-md">After</span>
+              <div class="text-center">
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#E8A849" stroke-width="1"><path d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M3 6h12v12H3z"/></svg>
+                <p class="text-amber-300/70 text-xs mt-2">AI動画PV</p>
+              </div>
+            </div>
+          </div>
+          <div class="p-6">
+            <p class="font-body text-terracotta-400 text-sm font-semibold mb-1">イタリアン レストラン様</p>
+            <h4 class="font-display text-lg font-bold text-espresso-700 mb-2">料理写真 → シズル感たっぷりの動画に</h4>
+            <p class="font-body text-espresso-400 text-sm">スマホで撮った料理写真3枚から、Instagram Reels用の動画を制作。投稿後のリーチ数が3倍に。</p>
+          </div>
+        </div>
+
+        <!-- Case 2 -->
+        <div class="reveal reveal-delay-2 bg-white rounded-2xl overflow-hidden shadow-lg shadow-espresso-900/5 border border-cream-300">
+          <div class="grid grid-cols-2">
+            <div class="aspect-square bg-cream-200 flex items-center justify-center p-6 relative">
+              <span class="absolute top-3 left-3 bg-espresso-700 text-white text-xs font-bold px-2.5 py-1 rounded-md">Before</span>
+              <div class="text-center">
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#C4A893" stroke-width="1"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6M16 13H8M16 17H8M10 9H8"/></svg>
+                <p class="text-espresso-300 text-xs mt-2">手書きメニュー</p>
+              </div>
+            </div>
+            <div class="aspect-square bg-gradient-to-br from-espresso-700 to-espresso-900 flex items-center justify-center p-6 relative">
+              <span class="absolute top-3 left-3 bg-terracotta-400 text-white text-xs font-bold px-2.5 py-1 rounded-md">After</span>
+              <div class="text-center">
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#E8A849" stroke-width="1"><path d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z"/></svg>
+                <p class="text-amber-300/70 text-xs mt-2">デザインメニュー</p>
+              </div>
+            </div>
+          </div>
+          <div class="p-6">
+            <p class="font-body text-terracotta-400 text-sm font-semibold mb-1">居酒屋様</p>
+            <h4 class="font-display text-lg font-bold text-espresso-700 mb-2">手書きメニュー → AI画像で魅力的に</h4>
+            <p class="font-body text-espresso-400 text-sm">既存のメニュー情報をもとに、写真映えするメニュー表をデザイン。お客様からの注文率がアップ。</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="reveal text-center mt-10">
+        <p class="font-body text-espresso-400 text-sm">※ 画像は制作イメージです。実際の事例は随時追加していきます。</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== SECTION 5: PROCESS ========== -->
+  <section class="py-20 sm:py-28">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6">
+      <div class="text-center mb-14 sm:mb-20">
+        <p class="reveal font-body text-terracotta-400 font-semibold text-sm tracking-widest uppercase mb-4">Process</p>
+        <h2 class="reveal reveal-delay-1 font-display text-3xl sm:text-4xl lg:text-5xl font-bold text-espresso-700 mb-6">
+          ご利用の流れ
+        </h2>
+        <div class="reveal reveal-delay-2 deco-line mx-auto mb-6"></div>
+        <p class="reveal reveal-delay-2 font-body text-lg text-espresso-400">かんたん4ステップで完了</p>
+      </div>
+
+      <div class="relative max-w-4xl mx-auto">
+        <!-- Connector line (desktop) -->
+        <div class="hidden sm:block step-connector"></div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-4 gap-8 sm:gap-4 relative z-10">
+          <!-- Step 1 -->
+          <div class="reveal reveal-delay-1 text-center">
+            <div class="w-14 h-14 bg-terracotta-400 text-white rounded-full flex items-center justify-center mx-auto mb-4 font-display text-xl font-bold shadow-lg shadow-terracotta-400/30">1</div>
+            <h4 class="font-display text-lg font-bold text-espresso-700 mb-2">お問い合わせ</h4>
+            <p class="font-body text-espresso-400 text-sm leading-relaxed">LINEまたはフォームから<br>お気軽にご連絡ください</p>
+          </div>
+          <!-- Step 2 -->
+          <div class="reveal reveal-delay-2 text-center">
+            <div class="w-14 h-14 bg-amber-400 text-white rounded-full flex items-center justify-center mx-auto mb-4 font-display text-xl font-bold shadow-lg shadow-amber-400/30">2</div>
+            <h4 class="font-display text-lg font-bold text-espresso-700 mb-2">写真をLINEで送付</h4>
+            <p class="font-body text-espresso-400 text-sm leading-relaxed">スマホで撮った写真を<br>LINEで送るだけでOK</p>
+          </div>
+          <!-- Step 3 -->
+          <div class="reveal reveal-delay-3 text-center">
+            <div class="w-14 h-14 bg-olive-400 text-white rounded-full flex items-center justify-center mx-auto mb-4 font-display text-xl font-bold shadow-lg shadow-olive-400/30">3</div>
+            <h4 class="font-display text-lg font-bold text-espresso-700 mb-2">3営業日で納品</h4>
+            <p class="font-body text-espresso-400 text-sm leading-relaxed">AIを活用して<br>スピーディーに制作します</p>
+          </div>
+          <!-- Step 4 -->
+          <div class="reveal reveal-delay-4 text-center">
+            <div class="w-14 h-14 bg-espresso-600 text-white rounded-full flex items-center justify-center mx-auto mb-4 font-display text-xl font-bold shadow-lg shadow-espresso-600/30">4</div>
+            <h4 class="font-display text-lg font-bold text-espresso-700 mb-2">修正は無料</h4>
+            <p class="font-body text-espresso-400 text-sm leading-relaxed">ご満足いただけるまで<br>何度でも修正対応します</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== SECTION 6: FAQ ========== -->
+  <section class="py-20 sm:py-28 warm-gradient">
+    <div class="max-w-3xl mx-auto px-4 sm:px-6">
+      <div class="text-center mb-14 sm:mb-20">
+        <p class="reveal font-body text-terracotta-400 font-semibold text-sm tracking-widest uppercase mb-4">FAQ</p>
+        <h2 class="reveal reveal-delay-1 font-display text-3xl sm:text-4xl lg:text-5xl font-bold text-espresso-700 mb-6">
+          よくあるご質問
+        </h2>
+        <div class="reveal reveal-delay-2 deco-line mx-auto"></div>
+      </div>
+
+      <div class="space-y-4">
+        <!-- FAQ 1 -->
+        <div class="reveal reveal-delay-1 faq-item bg-white rounded-xl border border-cream-300 cursor-pointer" onclick="toggleFaq(this)">
+          <div class="flex items-center justify-between p-6">
+            <h4 class="font-display text-lg font-bold text-espresso-700 pr-4">料理の写真はスマホで撮ったものでいいですか？</h4>
+            <span class="faq-icon w-8 h-8 bg-terracotta-50 rounded-full flex items-center justify-center flex-shrink-0 text-terracotta-400 font-bold text-xl">+</span>
+          </div>
+          <div class="faq-answer px-6 pb-6">
+            <p class="font-body text-espresso-400 leading-relaxed">はい、<strong>スマホ写真で大丈夫です。</strong>AIが画質を補正し、プロ品質の動画や画像に仕上げます。特別なカメラや撮影技術は一切不要です。</p>
+          </div>
+        </div>
+        <!-- FAQ 2 -->
+        <div class="reveal reveal-delay-2 faq-item bg-white rounded-xl border border-cream-300 cursor-pointer" onclick="toggleFaq(this)">
+          <div class="flex items-center justify-between p-6">
+            <h4 class="font-display text-lg font-bold text-espresso-700 pr-4">契約期間の縛りはありますか？</h4>
+            <span class="faq-icon w-8 h-8 bg-terracotta-50 rounded-full flex items-center justify-center flex-shrink-0 text-terracotta-400 font-bold text-xl">+</span>
+          </div>
+          <div class="faq-answer px-6 pb-6">
+            <p class="font-body text-espresso-400 leading-relaxed"><strong>契約期間の縛りはありません。</strong>月額プランはいつでも解約可能です。まずは1ヶ月だけ試してみて、効果を実感してから続けるかどうか決めていただけます。</p>
+          </div>
+        </div>
+        <!-- FAQ 3 -->
+        <div class="reveal reveal-delay-3 faq-item bg-white rounded-xl border border-cream-300 cursor-pointer" onclick="toggleFaq(this)">
+          <div class="flex items-center justify-between p-6">
+            <h4 class="font-display text-lg font-bold text-espresso-700 pr-4">追加料金はかかりますか？</h4>
+            <span class="faq-icon w-8 h-8 bg-terracotta-50 rounded-full flex items-center justify-center flex-shrink-0 text-terracotta-400 font-bold text-xl">+</span>
+          </div>
+          <div class="faq-answer px-6 pb-6">
+            <p class="font-body text-espresso-400 leading-relaxed"><strong>基本的に追加料金はかかりません。</strong>プランの範囲内ですべて対応します。プラン外のご要望がある場合は、事前にお見積もりをお出ししますのでご安心ください。</p>
+          </div>
+        </div>
+        <!-- FAQ 4 -->
+        <div class="reveal reveal-delay-4 faq-item bg-white rounded-xl border border-cream-300 cursor-pointer" onclick="toggleFaq(this)">
+          <div class="flex items-center justify-between p-6">
+            <h4 class="font-display text-lg font-bold text-espresso-700 pr-4">パソコンが苦手でも大丈夫ですか？</h4>
+            <span class="faq-icon w-8 h-8 bg-terracotta-50 rounded-full flex items-center justify-center flex-shrink-0 text-terracotta-400 font-bold text-xl">+</span>
+          </div>
+          <div class="faq-answer px-6 pb-6">
+            <p class="font-body text-espresso-400 leading-relaxed"><strong>もちろん大丈夫です！</strong>やり取りはすべてLINEで完結します。写真を送っていただくだけで、あとはすべてこちらで対応しますので、パソコンの操作は一切不要です。</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== SECTION 7: CONTACT ========== -->
+  <section id="contact" class="py-20 sm:py-28 relative overflow-hidden">
+    <!-- Background decoration -->
+    <div class="absolute inset-0 opacity-[0.03]" style="background-image: radial-gradient(circle at 30% 50%, #C75B2A 0%, transparent 40%), radial-gradient(circle at 70% 50%, #E8A849 0%, transparent 40%);"></div>
+
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 relative z-10">
+      <div class="text-center mb-14 sm:mb-16">
+        <p class="reveal font-body text-terracotta-400 font-semibold text-sm tracking-widest uppercase mb-4">Contact</p>
+        <h2 class="reveal reveal-delay-1 font-display text-3xl sm:text-4xl lg:text-5xl font-bold text-espresso-700 mb-6">
+          まずは無料で<br class="sm:hidden">ご相談ください
+        </h2>
+        <div class="reveal reveal-delay-2 deco-line mx-auto mb-6"></div>
+        <p class="reveal reveal-delay-2 font-body text-lg text-espresso-400">「こんなことできる？」だけでもOKです</p>
+      </div>
+
+      <div class="grid md:grid-cols-2 gap-8">
+        <!-- LINE CTA -->
+        <div class="reveal reveal-delay-1 bg-white rounded-2xl p-8 sm:p-10 border border-cream-300 shadow-lg shadow-espresso-900/5 text-center">
+          <div class="w-20 h-20 bg-[#06C755] rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg shadow-[#06C755]/20">
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="white"><path d="M19.365 9.863c.349 0 .63.285.63.631 0 .345-.281.63-.63.63H17.61v1.125h1.755c.349 0 .63.283.63.63 0 .344-.281.629-.63.629h-2.386c-.349 0-.63-.285-.63-.629V9.243c0-.346.281-.63.63-.63h2.386c.349 0 .63.285.63.63 0 .346-.281.631-.63.631H17.61v.989h1.755zM9.98 12.408c-.006.129-.09.264-.227.334l-.04.018a.4.4 0 01-.175.041.393.393 0 01-.301-.15L7.77 10.785l-.006 1.774c0 .351-.281.634-.631.634-.349 0-.63-.283-.63-.634V9.243c0-.129.09-.264.226-.334a.397.397 0 01.517.109l1.465 1.866.006-1.774c0-.346.281-.63.63-.63.346 0 .63.284.63.63v3.165h-.001zM6.161 12.559c-.349 0-.63-.285-.63-.631V9.243c0-.346.281-.63.63-.63.349 0 .63.284.63.63v2.685c0 .346-.281.631-.63.631zM3.829 12.559c-.349 0-.63-.285-.63-.631v-2.054H2.614c-.349 0-.63-.285-.63-.631 0-.345.281-.63.63-.63h2.43c.349 0 .63.285.63.631 0 .345-.281.63-.63.63h-.585v2.054c0 .346-.281.631-.63.631z"/><path d="M12 2C6.478 2 2 6.478 2 12c0 1.89.525 3.66 1.438 5.168L2.546 20.2A1.884 1.884 0 003.8 21.454l3.032-.892A9.93 9.93 0 0012 22c5.523 0 10-4.477 10-10S17.523 2 12 2z"/></svg>
+          </div>
+          <h3 class="font-display text-2xl font-bold text-espresso-700 mb-3">LINEで無料相談</h3>
+          <p class="font-body text-espresso-400 mb-6 text-sm leading-relaxed">友だち追加して、メッセージを<br>送るだけで相談スタート！</p>
+
+          <!-- QR Code Placeholder -->
+          <div class="w-40 h-40 bg-cream-100 border-2 border-dashed border-cream-400 rounded-xl mx-auto mb-5 flex items-center justify-center">
+            <div class="text-center">
+              <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#C4A893" stroke-width="1.5"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><path d="M14 14h3v3h-3zM18 18h3v3h-3z"/></svg>
+              <p class="text-espresso-300 text-xs mt-1">QRコード</p>
+            </div>
+          </div>
+
+          <a href="#" class="cta-btn text-white font-bold py-3.5 px-8 rounded-full text-base inline-flex items-center gap-2 w-full justify-center">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M19.365 9.863c.349 0 .63.285.63.631 0 .345-.281.63-.63.63H17.61v1.125h1.755c.349 0 .63.283.63.63 0 .344-.281.629-.63.629h-2.386c-.349 0-.63-.285-.63-.629V9.243c0-.346.281-.63.63-.63h2.386c.349 0 .63.285.63.63 0 .346-.281.631-.63.631H17.61v.989h1.755zM9.98 12.408c-.006.129-.09.264-.227.334l-.04.018a.4.4 0 01-.175.041.393.393 0 01-.301-.15L7.77 10.785l-.006 1.774c0 .351-.281.634-.631.634-.349 0-.63-.283-.63-.634V9.243c0-.129.09-.264.226-.334a.397.397 0 01.517.109l1.465 1.866.006-1.774c0-.346.281-.63.63-.63.346 0 .63.284.63.63v3.165h-.001zM6.161 12.559c-.349 0-.63-.285-.63-.631V9.243c0-.346.281-.63.63-.63.349 0 .63.284.63.63v2.685c0 .346-.281.631-.63.631zM3.829 12.559c-.349 0-.63-.285-.63-.631v-2.054H2.614c-.349 0-.63-.285-.63-.631 0-.345.281-.63.63-.63h2.43c.349 0 .63.285.63.631 0 .345-.281.63-.63.63h-.585v2.054c0 .346-.281.631-.63.631z"/><path d="M12 2C6.478 2 2 6.478 2 12c0 1.89.525 3.66 1.438 5.168L2.546 20.2A1.884 1.884 0 003.8 21.454l3.032-.892A9.93 9.93 0 0012 22c5.523 0 10-4.477 10-10S17.523 2 12 2z"/></svg>
+            友だち追加する
+          </a>
+        </div>
+
+        <!-- Contact Form -->
+        <div class="reveal reveal-delay-2 bg-white rounded-2xl p-8 sm:p-10 border border-cream-300 shadow-lg shadow-espresso-900/5">
+          <h3 class="font-display text-2xl font-bold text-espresso-700 mb-6 text-center">お問い合わせフォーム</h3>
+          <form action="#" method="POST" class="space-y-5">
+            <div>
+              <label class="font-body text-sm font-semibold text-espresso-600 block mb-1.5">お名前 <span class="text-terracotta-400">*</span></label>
+              <input type="text" required class="w-full px-4 py-3 rounded-xl border border-cream-300 focus:border-terracotta-300 focus:ring-2 focus:ring-terracotta-100 outline-none transition-all font-body text-espresso-700 bg-cream-50" placeholder="山田 太郎">
+            </div>
+            <div>
+              <label class="font-body text-sm font-semibold text-espresso-600 block mb-1.5">店舗名</label>
+              <input type="text" class="w-full px-4 py-3 rounded-xl border border-cream-300 focus:border-terracotta-300 focus:ring-2 focus:ring-terracotta-100 outline-none transition-all font-body text-espresso-700 bg-cream-50" placeholder="〇〇レストラン">
+            </div>
+            <div>
+              <label class="font-body text-sm font-semibold text-espresso-600 block mb-1.5">メールアドレス <span class="text-terracotta-400">*</span></label>
+              <input type="email" required class="w-full px-4 py-3 rounded-xl border border-cream-300 focus:border-terracotta-300 focus:ring-2 focus:ring-terracotta-100 outline-none transition-all font-body text-espresso-700 bg-cream-50" placeholder="example@email.com">
+            </div>
+            <div>
+              <label class="font-body text-sm font-semibold text-espresso-600 block mb-1.5">ご相談内容</label>
+              <textarea rows="3" class="w-full px-4 py-3 rounded-xl border border-cream-300 focus:border-terracotta-300 focus:ring-2 focus:ring-terracotta-100 outline-none transition-all font-body text-espresso-700 bg-cream-50 resize-none" placeholder="気になるサービスやご質問など、お気軽にどうぞ"></textarea>
+            </div>
+            <button type="submit" class="w-full bg-gradient-to-r from-terracotta-400 to-amber-400 text-white font-bold py-3.5 px-6 rounded-xl hover:shadow-lg hover:shadow-terracotta-400/20 transition-all text-base">
+              送信する
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== FOOTER ========== -->
+  <footer class="bg-espresso-800 text-white/60 py-10">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 text-center">
+      <a href="#" class="font-display text-2xl font-bold text-white tracking-tight inline-block mb-4">
+        Storia <span class="text-amber-300">AI</span>
+      </a>
+      <p class="font-body text-sm mb-2">お店の物語を、AIとともに。</p>
+      <p class="font-body text-xs text-white/30">&copy; 2026 Storia AI. All rights reserved.</p>
+    </div>
+  </footer>
+
+  <!-- ========== SCRIPTS ========== -->
+  <script>
+    // Header background on scroll
+    const header = document.getElementById('header');
+    window.addEventListener('scroll', () => {
+      if (window.scrollY > 50) {
+        header.classList.add('bg-cream-100/95', 'backdrop-blur-md', 'shadow-sm');
+      } else {
+        header.classList.remove('bg-cream-100/95', 'backdrop-blur-md', 'shadow-sm');
+      }
+    });
+
+    // Scroll reveal
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+        }
+      });
+    }, { threshold: 0.1, rootMargin: '0px 0px -50px 0px' });
+
+    document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+    // FAQ accordion
+    function toggleFaq(item) {
+      const wasOpen = item.classList.contains('open');
+      document.querySelectorAll('.faq-item').forEach(i => i.classList.remove('open'));
+      if (!wasOpen) item.classList.add('open');
+    }
+
+    // Smooth scroll for anchor links
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+      anchor.addEventListener('click', function (e) {
+        e.preventDefault();
+        const target = document.querySelector(this.getAttribute('href'));
+        if (target) {
+          target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      });
+    });
+  </script>
+
+</body>
+</html>
